@@ -1,0 +1,7 @@
+## Interface: 110200
+## Title: ParagonInfo
+## Author: swaynee
+## version 1.0
+## DefaultState: Enabled
+
+ParagonInfo.lua
