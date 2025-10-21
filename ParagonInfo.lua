@@ -26,10 +26,6 @@ else
                        }
 end
 
-
---to-do: wenn nicht exalted, getfactionparagoninfo gibt nil, muss also in getfactiondatabyid oder so checken 
---außerdem stimmt glaub mit dem timing was nicht wenn das abgerufen wird
-
 for i,factionID in ipairs(factionIDs) do
 
 	--Queries the server to pre-load Paragon reward data.
@@ -39,14 +35,14 @@ for i,factionID in ipairs(factionIDs) do
     factionData 																				= C_Reputation.GetFactionDataByID(factionID)
 	
 	--if failed, continue
-	if factionID == "" or factionData == nil or C_Reputation.GetFactionParagonInfo(factionID) == nil then 
-		print("faction: ",factionID," ERROR: couldnt get rep info")
+	if factionID == "" or factionData == nil then 
+		print("faction: " .. factionID .. " ERROR: couldnt get rep info")
 		continue
 	end
 	
 	--if not exalted, continue
-	if tooLowLevelForParagon or factionData.currentStanding == nil or not factionData.currentStanding >= 42000 then
-		print("faction: ",factionID," ERROR: not exalted/too low level/not met yet")
+	if tooLowLevelForParagon or factionData.currentStanding == nil or not factionData.currentStanding >= 42000 or C_Reputation.GetFactionParagonInfo(factionID) == nil then
+		print("faction: " .. factionID .. " ERROR: not exalted/too low level/not met yet")
 		continue
 	end
 	
@@ -64,3 +60,4 @@ for i,factionID in ipairs(factionIDs) do
 		print("\124cffFFFF00" .. factionData.name .. ": PARAGON SOON READY (" .. currentParagonRep .. "/10000)\124r")
 	end
 end
+
