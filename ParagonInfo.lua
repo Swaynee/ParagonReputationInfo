@@ -31,30 +31,36 @@ end
 --außerdem stimmt glaub mit dem timing was nicht wenn das abgerufen wird
 
 for i,factionID in ipairs(factionIDs) do
+
+	--Queries the server to pre-load Paragon reward data.
+	C_Reputation.RequestFactionParagonPreloadRewardData(factionID)
+	
     local currentValue, threshold, rewardQuestID, hasRewardPending, tooLowLevelForParagon       = C_Reputation.GetFactionParagonInfo(factionID)
-    factionData = C_Reputation.GetFactionDataByID(factionID)
-    if factionData ~= nil then 
-        print(factionData.name,": ",currentValue, threshold, hasRewardPending)
-    end
-    
+    factionData 																				= C_Reputation.GetFactionDataByID(factionID)
+	
+	--if failed, continue
+	if factionID == "" or factionData == nil or C_Reputation.GetFactionParagonInfo(factionID) == nil then 
+		print("faction: ",factionID," ERROR: couldnt get rep info")
+		continue
+	end
+	
+	--if not exalted, continue
+	if tooLowLevelForParagon or factionData.currentStanding == nil or not factionData.currentStanding >= 42000 then
+		print("faction: ",factionID," ERROR: not exalted/too low level/not met yet")
+		continue
+	end
+	
+	--find reputation paragon standing
+	local currentParagonRep	= currentValue%10000
+	
+	--if paragon ready
+	if hasRewardPending then
+		print("\124cffFF0000" .. factionData.name .. ": PARAGON READY (" .. currentParagonRep .. "/10000)\124r")
+		continue
+	end
+	
+	--if paragon ready soon
+	if currentParagonRep >= 9000 then
+		print("\124cffFFFF00" .. factionData.name .. ": PARAGON SOON READY (" .. currentParagonRep .. "/10000)\124r")
+	end
 end
-
---if horde ...
-
---if not exalted
--- continue
---if <8000 paragon reputation and not hasRewardPending
---  continue
-
---if <8000 paragon reputation and hasRewardPending
---  print factionname: paragon ready
-
---if >8000 paragon reputation and not hasRewardPending
---  print factionname: >8000/10000 rep warning
-
---if >8000 paragon reputation and hasRewardPending
---  print factionname: paragon ready and >8000/10000
-
--- https://warcraft.wiki.gg/wiki/World_of_Warcraft_API#ReputationInfo
--- https://warcraft.wiki.gg/wiki/API_C_Reputation.GetFactionDataByID
-
