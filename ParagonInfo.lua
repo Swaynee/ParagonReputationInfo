@@ -26,38 +26,68 @@ else
                        }
 end
 
-for i,factionID in ipairs(factionIDs) do
+--dialoguebox
 
-	--Queries the server to pre-load Paragon reward data.
-	C_Reputation.RequestFactionParagonPreloadRewardData(factionID)
-	
-    local currentValue, threshold, rewardQuestID, hasRewardPending, tooLowLevelForParagon       = C_Reputation.GetFactionParagonInfo(factionID)
-    factionData 																				= C_Reputation.GetFactionDataByID(factionID)
-	
-	--if failed, continue
-	if factionID == "" or factionData == nil then 
-		print("faction: " .. factionID .. " ERROR: couldnt get rep info")
-		continue
-	end
-	
-	--if not exalted, continue
-	if tooLowLevelForParagon or factionData.currentStanding == nil or not factionData.currentStanding >= 42000 or C_Reputation.GetFactionParagonInfo(factionID) == nil then
-		print("faction: " .. factionID .. " ERROR: not exalted/too low level/not met yet")
-		continue
-	end
-	
-	--find reputation paragon standing
-	local currentParagonRep	= currentValue%10000
-	
-	--if paragon ready
-	if hasRewardPending then
-		print("\124cffFF0000" .. factionData.name .. ": PARAGON READY (" .. currentParagonRep .. "/10000)\124r")
-		continue
-	end
-	
-	--if paragon ready soon
-	if currentParagonRep >= 9000 then
-		print("\124cffFFFF00" .. factionData.name .. ": PARAGON SOON READY (" .. currentParagonRep .. "/10000)\124r")
-	end
+local function popupDialogue(message)
+
+    StaticPopupDialogs["PARAGONBOX_INFO"] = {
+        text = message,
+        button1 = "OK",
+        button2 = nil,
+        OnAccept = nil,
+        timeout = 0,
+        whileDead = true,
+        hideOnEscape = true,
+        preferredIndex = 3,
+    }
+    StaticPopup_Show ("PARAGONBOX_INFO")
+
 end
 
+
+
+--todo: viele fraktionen brauchen nicht 10k für paragon und viele fraktionen brauchen nicht genau 42000 um exalted zu sein
+--absicherungsblock fixen
+--messages stattdessen in einem kleinen pop up erscheinen lassen
+
+
+for i,factionID in ipairs(factionIDs) do
+    repeat
+	--Queries the server to pre-load Paragon reward data.
+	C_Reputation.RequestFactionParagonPreloadRewardData(factionID)
+
+    local currentValue, threshold, rewardQuestID, hasRewardPending, tooLowLevelForParagon       = C_Reputation.GetFactionParagonInfo(factionID)
+    factionData 																				= C_Reputation.GetFactionDataByID(factionID)
+
+	--if failed, continue
+	if factionID == "" or factionData == nil then
+		print("faction: " .. factionID .. " ERROR: couldnt get rep info")
+		break
+	end
+
+	--if not exalted, continue
+--[[ 	if tooLowLevelForParagon or 
+       (factionData.currentStanding == nil) or 
+       not (factionData.currentStanding >= 42000) or 
+       (C_Reputation.GetFactionParagonInfo(factionID) == nil) then
+        print("debug:" .. factionData.currentStanding .." paragoninfo: " ..  C_Reputation.GetFactionParagonInfo(factionID))
+		print("faction: " .. factionID .. " ERROR: not exalted/too low level/not met yet")
+		break
+	end ]]
+
+	--find reputation paragon standing
+	local currentParagonRep	= currentValue%10000
+
+	--if paragon ready
+	if hasRewardPending then
+		popupDialogue("\124cffFF0000" .. factionData.name .. ": PARAGON READY (" .. currentParagonRep .. "/10000)\124r")
+		break
+	end
+
+	--if paragon ready soon
+	if currentParagonRep >= 9000 then
+		popupDialogue("\124cffFFFF00" .. factionData.name .. ": PARAGON SOON READY (" .. currentParagonRep .. "/10000)\124r")
+	end
+
+    until true
+end
